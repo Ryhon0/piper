@@ -139,6 +139,17 @@ class ButtonDialog(Gtk.Dialog):
                 self.listbox.select_row(row)
             i += 1
 
+        # Media keys
+        for mediakey in [
+            ("Play/Pause", 164),
+            ("Next song", 163), ("Previous song", 165), 
+            ("Volume up", 115), ("Volume down", 114),
+            ("Mute", 113)]:
+            row = ButtonRow(_(mediakey[0]), _("Media mapping"), RatbagdButton.ActionType.MACRO, None)
+            row.mediakey = mediakey[1]
+            self.listbox.insert(row, i)
+            i += 1
+
         if self._action_type == RatbagdButton.ActionType.MACRO:
             self._create_current_macro(macro=self._mapping)
         else:
@@ -314,6 +325,12 @@ class ButtonDialog(Gtk.Dialog):
 
     @GtkTemplate.Callback
     def _on_apply_button_clicked(self, button):
+        if hasattr(self.listbox.get_selected_row() , "mediakey"):
+            self._create_current_macro()
+            self._current_macro.append(RatbagdButton.Macro.KEY_PRESS, self.listbox.get_selected_row().mediakey)
+            self._current_macro.append(RatbagdButton.Macro.KEY_RELEASE, self.listbox.get_selected_row().mediakey)
+            self._current_macro.accept()
+            return Gdk.EVENT_PROPAGATE
         if self.stack.get_visible_child_name() == "capture":
             self._current_macro.accept()
         return Gdk.EVENT_PROPAGATE
